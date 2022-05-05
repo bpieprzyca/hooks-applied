@@ -1,88 +1,69 @@
-import React, {useMemo, useState, useCallback} from 'react';
+import React from 'react';
 
-import {themes, Theme} from 'src/utils/constants';
+import {columnClass} from 'components/PageLayout/styles.css';
 
-type TActionsColumn = {
-    theme: Theme;
-    toggleTheme: () => void;
-    addAction: (actionName: string) => void;
-}
+import {
+  textareaClass,
+  textareaWrapperClass,
+  textareaSubmitButtonClass,
+  leftColumnClass,
+  bigButtonClass,
+} from './styles.css';
 
-export const ActionsColumn = ({
-  theme, toggleTheme, addAction,
-}: TActionsColumn) => {
-  const [textValue, setTextValue] = useState('');
-  const [addedButtons, setAddedButtons] = useState([]);
+import {useTextarea} from 'hooks/useTextarea';
+import {useThemeButton} from 'hooks/useThemeButton';
+import {useAdditiveButtons} from 'hooks/useAdditiveButtons';
+import {AddedButton} from './components/AddedButton';
 
-  const themeButtonText = useMemo(
-      () => `Set ${theme === themes.light ? 'Dark' : 'Light'} Theme`,
-      [theme],
-  );
+export const ActionsColumn = () => {
+  const {
+    textareaValue,
+    onTextareaChange,
+    onSubmitTextarea,
+    isSubmitTextareaDisabled,
+  } = useTextarea();
 
-  const onTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const {value} = event.target;
-    setTextValue(value);
-  };
+  const {
+    onThemeButtonClick,
+    themeButtonText,
+  } = useThemeButton();
 
-  const onSendButtonClick = useCallback(() => {
-    setTextValue('');
-    addAction(`Message Sent: ${textValue}`);
-  },
-  [setTextValue, textValue, addAction],
-  );
-
-  const onThemeButtonClick = useCallback(() => {
-    toggleTheme();
-    addAction(`Theme was set to ${theme === themes.light ? 'Dark' : 'Light'}`);
-  }, [theme, toggleTheme, addAction]);
-
-  const addNewButton = useCallback(() => {
-    const buttonNumber = addedButtons.length + 1;
-    const buttonName = `Button ${buttonNumber}`;
-
-    addAction(`${buttonName} added`);
-
-    setAddedButtons([...addedButtons, buttonName]);
-  }, [addedButtons.length, addAction]);
-
-  const isSendButtonDisabled = useMemo(() => !textValue, [textValue]);
-
-  const addButtonText = useMemo(
-      () => `Add Button ${addedButtons.length + 1}`,
-      [addedButtons.length],
-  );
+  const {
+    addedButtons,
+    addNewButton,
+    addButtonText,
+  } = useAdditiveButtons();
 
   return (
-    <div className='left-column'>
-      <button onClick={onThemeButtonClick} >
+    <div className={`${leftColumnClass} ${columnClass}`}>
+      <h1>ACTIONS</h1>
+      <button className={bigButtonClass} onClick={onThemeButtonClick} >
         {themeButtonText}
       </button>
-      <textarea
-        name='textarea'
-        value={textValue}
-        onChange={onTextChange}
-        rows={6}
-      />
-      <button
-        disabled={isSendButtonDisabled}
-        onClick={onSendButtonClick}
-      >
+      <div className={textareaWrapperClass}>
+        <textarea
+          className={textareaClass}
+          name='textarea'
+          value={textareaValue}
+          onChange={onTextareaChange}
+          rows={12}
+        />
+        <button
+          className={textareaSubmitButtonClass}
+          disabled={isSubmitTextareaDisabled}
+          onClick={onSubmitTextarea}
+        >
           Send
-      </button>
-      <button onClick={addNewButton} >
+        </button>
+      </div>
+      <button className={bigButtonClass} onClick={addNewButton}>
         {addButtonText}
       </button>
       {addedButtons.map(
           (buttonName) => (
-            <button
-              key={buttonName}
-              onClick={() => {
-                addAction(`${buttonName} clicked`);
-              }}
-            >
-              {buttonName}
-            </button>
-          ))}
+            <AddedButton buttonName={buttonName} key={buttonName} />
+          ))
+      }
     </div>
   );
 };
